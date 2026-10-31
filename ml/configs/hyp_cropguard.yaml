@@ -1,0 +1,33 @@
+# CropGuard AI: Fine-Tuning Hyperparameters for YOLO11s Agricultural Pest Detection
+# Optimized for small-scale insect targets, field foliage occlusions, and varied outdoor lighting.
+
+# Optimization
+lr0: 0.01          # Initial learning rate (SGD=1E-2, Adam=1E-3)
+lrf: 0.01          # Final learning rate fraction (lr0 * lrf)
+momentum: 0.937    # SGD momentum/Adam beta1
+weight_decay: 0.0005 # Optimizer weight decay 5e-4
+warmup_epochs: 3.0 # Warmup epochs
+warmup_momentum: 0.8 # Warmup initial momentum
+warmup_bias_lr: 0.1  # Warmup initial bias lr
+
+# Loss Gains
+box: 7.5           # Box loss gain
+cls: 0.5           # Class loss gain
+dfl: 1.5           # Distribution Focal Loss gain
+
+# Data Augmentations (Field Resilience)
+hsv_h: 0.015       # Image HSV-Hue augmentation (fraction)
+hsv_s: 0.7         # Image HSV-Saturation augmentation (fraction)
+hsv_v: 0.4         # Image HSV-Value/brightness augmentation (fraction)
+degrees: 15.0      # Image rotation (+/- deg)
+translate: 0.1     # Image translation (+/- fraction)
+scale: 0.5         # Image scale (+/- gain, aids small insect detection)
+shear: 0.0         # Image shear (+/- deg)
+perspective: 0.0   # Image perspective (+/- fraction)
+flipud: 0.2        # Image flip up-down (probability)
+fliplr: 0.5        # Image flip left-right (probability)
+mosaic: 1.0        # Image mosaic augmentation (probability 1.0)
+mixup: 0.15        # Image mixup augmentation (probability 0.15)
+copy_paste: 0.1    # Segment copy-paste probability
+auto_augment: randaugment # Automated policy augmentation
+erasing: 0.2       # Random erasing probability (simulates leaf occlusions)

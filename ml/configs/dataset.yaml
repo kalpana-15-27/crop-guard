@@ -1,0 +1,29 @@
+# CropGuard AI: YOLO11s Agricultural Pest Detection Dataset Configuration
+
+# Dataset Root Directory (Relative to training execution root or absolute path)
+path: ../dataset/processed
+
+# Train / Validation / Test Subsets
+train: images/train
+val: images/val
+test: images/test
+
+# Number of Classes
+nc: 6
+
+# Class Names (Strictly Harmful Agricultural Pests for Target Crops)
+names:
+  0: Aphids
+  1: Whitefly
+  2: Brown Planthopper
+  3: Yellow Stem Borer
+  4: Thrips
+  5: Helicoverpa armigera
+
+# Target Host Crop Associations for Context:
+# 0: Aphids              -> Cotton, Chilli, Tomato
+# 1: Whitefly            -> Cotton, Tomato, Chilli
+# 2: Brown Planthopper   -> Paddy/Rice
+# 3: Yellow Stem Borer   -> Paddy/Rice
+# 4: Thrips              -> Chilli, Cotton, Tomato
+# 5: Helicoverpa armigera -> Tomato, Cotton, Chilli
