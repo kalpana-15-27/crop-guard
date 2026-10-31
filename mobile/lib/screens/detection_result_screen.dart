@@ -66,7 +66,7 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -91,26 +91,30 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                       Positioned(
                         top: 12,
                         right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                hasPest ? Icons.visibility : Icons.check_circle,
-                                color: hasPest ? AppTheme.lime : AppTheme.freshGreen,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${result.cropType} • ${result.modelVersion}',
-                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
-                              ),
-                            ],
+                        child: InkWell(
+                          onTap: () => setState(() => _showAnnotated = !_showAnnotated),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _showAnnotated ? Icons.visibility : Icons.visibility_off,
+                                  color: hasPest ? AppTheme.lime : AppTheme.freshGreen,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _showAnnotated ? 'Annotated (${result.cropType})' : 'Original (${result.cropType})',
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -128,7 +132,7 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                   color: AppTheme.cardWhite,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: hasPest ? AppTheme.errorRed.withOpacity(0.3) : AppTheme.freshGreen.withOpacity(0.3),
+                    color: hasPest ? AppTheme.errorRed.withValues(alpha: 0.3) : AppTheme.freshGreen.withValues(alpha: 0.3),
                     width: 1.2,
                   ),
                 ),
@@ -141,8 +145,8 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: hasPest
-                                ? AppTheme.errorRed.withOpacity(0.12)
-                                : AppTheme.freshGreen.withOpacity(0.12),
+                                ? AppTheme.errorRed.withValues(alpha: 0.12)
+                                : AppTheme.freshGreen.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -247,13 +251,13 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(Icons.description_outlined, color: AppTheme.leafGreen, size: 20),
-                          const SizedBox(width: 8),
+                          Icon(Icons.description_outlined, color: AppTheme.leafGreen, size: 20),
+                          SizedBox(width: 8),
                           Text(
                             'Description',
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.darkText),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.darkText),
                           ),
                         ],
                       ),
@@ -288,9 +292,9 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: AppTheme.leafGreen.withOpacity(0.06),
+                    color: AppTheme.leafGreen.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.leafGreen.withOpacity(0.3)),
+                    border: Border.all(color: AppTheme.leafGreen.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

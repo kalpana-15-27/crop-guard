@@ -100,7 +100,7 @@ class HomeDashboardScreen extends StatelessWidget {
                       onTap: () => onNavigateTab(3),
                       child: CircleAvatar(
                         radius: 22,
-                        backgroundColor: AppTheme.leafGreen.withOpacity(0.15),
+                        backgroundColor: AppTheme.leafGreen.withValues(alpha: 0.15),
                         child: Text(
                           auth.displayName.isNotEmpty
                               ? auth.displayName[0].toUpperCase()
@@ -133,7 +133,7 @@ class HomeDashboardScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.leafGreen.withOpacity(0.3),
+                        color: AppTheme.leafGreen.withValues(alpha: 0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -148,7 +148,7 @@ class HomeDashboardScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppTheme.lime.withOpacity(0.25),
+                              color: AppTheme.lime.withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
@@ -265,9 +265,9 @@ class HomeDashboardScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // Live Actual Detection Statistics
-                Text(
+                const Text(
                   'Detection Summary',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.darkText,
@@ -320,7 +320,7 @@ class HomeDashboardScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.freshGreen.withOpacity(0.12),
+                          color: AppTheme.freshGreen.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.lightbulb_outline, color: AppTheme.leafGreen, size: 22),
@@ -407,8 +407,8 @@ class HomeDashboardScreen extends StatelessWidget {
                         ),
                         leading: CircleAvatar(
                           backgroundColor: item.isPestDetected
-                              ? AppTheme.errorRed.withOpacity(0.12)
-                              : AppTheme.freshGreen.withOpacity(0.12),
+                              ? AppTheme.errorRed.withValues(alpha: 0.12)
+                              : AppTheme.freshGreen.withValues(alpha: 0.12),
                           child: Icon(
                             item.isPestDetected ? Icons.bug_report : Icons.check,
                             color: item.isPestDetected ? AppTheme.errorRed : AppTheme.freshGreen,

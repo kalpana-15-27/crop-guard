@@ -38,7 +38,7 @@ class PestCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppTheme.leafGreen.withOpacity(0.12),
+                    color: AppTheme.leafGreen.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.bug_report, color: AppTheme.leafGreen, size: 22),

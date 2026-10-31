@@ -1,4 +1,4 @@
-/// Data models for CropGuard AI Pests, Detections, and Scan Records
+// Data models for CropGuard AI Pests, Detections, and Scan Records
 
 class PestCategory {
   final String id;

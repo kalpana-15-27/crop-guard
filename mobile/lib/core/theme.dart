@@ -50,7 +50,7 @@ class AppTheme {
         ),
         iconTheme: IconThemeData(color: deepForest),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardWhite,
         elevation: 0,
         shape: RoundedRectangleBorder(

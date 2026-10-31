@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_config.dart';
@@ -84,7 +83,7 @@ class ImageCaptureScreen extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -107,7 +106,7 @@ class ImageCaptureScreen extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.65),
+                                  color: Colors.black.withValues(alpha: 0.65),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -123,7 +122,7 @@ class ImageCaptureScreen extends StatelessWidget {
                           children: [
                             Container(
                               padding: const EdgeInsets.all(18),
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: AppTheme.surfaceMuted,
                                 shape: BoxShape.circle,
                               ),

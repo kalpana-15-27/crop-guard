@@ -27,7 +27,7 @@ void main() async {
   try {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
-      anonKey: AppConfig.supabaseAnonKey,
+      publishableKey: AppConfig.supabasePublishableKey,
     );
   } catch (e) {
     debugPrint('Supabase initialization notice: $e');
@@ -51,7 +51,7 @@ class CropGuardApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Listen to AppStrings for real-time Telugu / English updates
-    final strings = Provider.of<AppStrings>(context);
+    context.watch<AppStrings>();
 
     return MaterialApp(
       title: AppConfig.appName,

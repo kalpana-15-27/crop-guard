@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/app_config.dart';
 
 /// Supabase Authentication & Profile Service
 class SupabaseAuthService {

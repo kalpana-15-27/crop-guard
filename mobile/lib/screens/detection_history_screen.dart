@@ -92,10 +92,10 @@ class DetectionHistoryScreen extends StatelessWidget {
                     onDismissed: (_) {
                       detection.removeHistoryItem(item.id);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Scan record deleted'),
                           backgroundColor: AppTheme.errorRed,
-                          duration: const Duration(seconds: 2),
+                          duration: Duration(seconds: 2),
                         ),
                       );
                     },
@@ -145,7 +145,7 @@ class DetectionHistoryScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.errorRed.withOpacity(0.1),
+                                      color: AppTheme.errorRed.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(

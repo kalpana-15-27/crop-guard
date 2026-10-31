@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:crop_guard/core/theme.dart';
 import 'package:crop_guard/localization/app_strings.dart';
-import 'package:crop_guard/providers/auth_provider.dart';
-import 'package:crop_guard/providers/detection_provider.dart';
 import 'package:crop_guard/widgets/crop_chip.dart';
 import 'package:crop_guard/widgets/stat_card.dart';
 import 'package:crop_guard/widgets/disclaimer_banner.dart';

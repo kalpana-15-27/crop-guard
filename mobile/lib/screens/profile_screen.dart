@@ -84,7 +84,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final tr = AppStrings().tr;
     final strings = AppStrings();
     final auth = Provider.of<AuthProvider>(context);
-    final isTe = strings.isTelugu;
 
     return Scaffold(
       backgroundColor: AppTheme.warmBackground,
@@ -109,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 32,
-                      backgroundColor: AppTheme.leafGreen.withOpacity(0.12),
+                      backgroundColor: AppTheme.leafGreen.withValues(alpha: 0.12),
                       child: Text(
                         auth.displayName.isNotEmpty
                             ? auth.displayName[0].toUpperCase()
@@ -184,38 +183,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppTheme.borderLight, width: 1),
                 ),
-                child: Column(
-                  children: [
-                    RadioListTile<String>(
-                      value: 'en',
-                      groupValue: strings.currentLanguage,
-                      activeColor: AppTheme.leafGreen,
-                      title: const Text('English (Default)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                      subtitle: const Text('All diagnostics and advice in English', style: TextStyle(fontSize: 12, color: AppTheme.mutedText)),
-                      onChanged: (val) {
-                        if (val != null) {
-                          strings.setLanguage(val);
-                          SupabaseAuthService().updateProfile(preferredLanguage: val);
-                          setState(() {});
-                        }
-                      },
-                    ),
-                    const Divider(height: 1, color: AppTheme.borderLight),
-                    RadioListTile<String>(
-                      value: 'te',
-                      groupValue: strings.currentLanguage,
-                      activeColor: AppTheme.leafGreen,
-                      title: const Text('తెలుగు (Telugu)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                      subtitle: const Text('పురుగుల గుర్తింపు మరియు నివారణ చర్యలు తెలుగులో', style: TextStyle(fontSize: 12, color: AppTheme.mutedText)),
-                      onChanged: (val) {
-                        if (val != null) {
-                          strings.setLanguage(val);
-                          SupabaseAuthService().updateProfile(preferredLanguage: val);
-                          setState(() {});
-                        }
-                      },
-                    ),
-                  ],
+                child: RadioGroup<String>(
+                  groupValue: strings.currentLanguage,
+                  onChanged: (val) {
+                    if (val != null) {
+                      strings.setLanguage(val);
+                      SupabaseAuthService().updateProfile(preferredLanguage: val);
+                      setState(() {});
+                    }
+                  },
+                  child: const Column(
+                    children: [
+                      RadioListTile<String>(
+                        value: 'en',
+                        activeColor: AppTheme.leafGreen,
+                        title: Text('English (Default)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        subtitle: Text('All diagnostics and advice in English', style: TextStyle(fontSize: 12, color: AppTheme.mutedText)),
+                      ),
+                      Divider(height: 1, color: AppTheme.borderLight),
+                      RadioListTile<String>(
+                        value: 'te',
+                        activeColor: AppTheme.leafGreen,
+                        title: Text('తెలుగు (Telugu)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        subtitle: Text('పురుగుల గుర్తింపు మరియు నివారణ చర్యలు తెలుగులో', style: TextStyle(fontSize: 12, color: AppTheme.mutedText)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -241,22 +234,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppTheme.leafGreen.withOpacity(0.12),
+                            color: AppTheme.leafGreen.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(Icons.school_outlined, color: AppTheme.leafGreen, size: 20),
                         ),
                         const SizedBox(width: 12),
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               AppConfig.appName,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.darkText),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.darkText),
                             ),
                             Text(
                               'Version ${AppConfig.appVersion} (${AppConfig.modelVersion})',
-                              style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
+                              style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
                             ),
                           ],
                         ),
@@ -270,8 +263,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 14),
                     const Divider(height: 1, color: AppTheme.borderLight),
                     const SizedBox(height: 12),
-                    Row(
-                      children: const [
+                    const Row(
+                      children: [
                         Icon(Icons.cloud_done_outlined, size: 16, color: AppTheme.freshGreen),
                         SizedBox(width: 6),
                         Text(

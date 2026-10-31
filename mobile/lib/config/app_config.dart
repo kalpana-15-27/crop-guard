@@ -6,7 +6,8 @@ class AppConfig {
 
   // Supabase Configuration (Using User's Existing Project)
   static const String supabaseUrl = 'https://cxzayeoqbocryekkqiyk.supabase.co';
-  static const String supabaseAnonKey = 'sb_publishable_ndB59weEGKDben6iY6odMg_hkNruZ3k';
+  static const String supabasePublishableKey = 'sb_publishable_ndB59weEGKDben6iY6odMg_hkNruZ3k';
+  static const String supabaseAnonKey = supabasePublishableKey;
 
   // Backend API URL
   // Default to emulator localhost (10.0.2.2). On a physical Android device, change to host LAN IP (e.g., http://192.168.1.X:8000)
