@@ -126,11 +126,14 @@ class DetectionResult {
 
   bool get isPestDetected => status == 'detected' && totalDetections > 0;
 
-  factory DetectionResult.fromJson(Map<String, dynamic> json) {
+  factory DetectionResult.fromJson(Map<String, dynamic> json, {String? localImagePath}) {
+    final rawImagePath = (json['image_path'] ?? json['image_url']) as String?;
+    final rawAnnotatedPath = (json['annotated_image_path'] ?? json['annotated_image_url']) as String?;
+
     return DetectionResult(
       id: json['id'] as String? ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      imagePath: json['image_path'] as String?,
-      annotatedImagePath: json['annotated_image_path'] as String?,
+      imagePath: localImagePath ?? rawImagePath,
+      annotatedImagePath: rawAnnotatedPath,
       cropType: json['crop_type'] as String? ?? 'Paddy/Rice',
       status: json['detection_status'] as String? ?? 'pending',
       totalDetections: json['total_detections'] as int? ?? 0,

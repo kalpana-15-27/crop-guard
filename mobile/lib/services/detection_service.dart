@@ -42,7 +42,10 @@ class DetectionService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return DetectionResult.fromJson(response.data as Map<String, dynamic>);
+        return DetectionResult.fromJson(
+          response.data as Map<String, dynamic>,
+          localImagePath: imageFile.path,
+        );
       } else {
         throw Exception('Server returned status ${response.statusCode}');
       }
