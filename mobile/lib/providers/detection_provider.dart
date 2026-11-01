@@ -111,8 +111,13 @@ class DetectionProvider with ChangeNotifier {
       _isAnalyzing = false;
       notifyListeners();
       return true;
+    } on DetectionApiException catch (e) {
+      _errorMessage = e.message;
+      _isAnalyzing = false;
+      notifyListeners();
+      return false;
     } catch (e) {
-      _errorMessage = 'Detection failed: $e';
+      _errorMessage = e.toString();
       _isAnalyzing = false;
       notifyListeners();
       return false;

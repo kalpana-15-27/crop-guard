@@ -1,9 +1,26 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import '../config/app_config.dart';
+import '../localization/app_strings.dart';
 import '../models/pest_model.dart';
 
-/// Detection API & Supabase History Service
+/// Custom Exception thrown for detection API errors
+class DetectionApiException implements Exception {
+  final String message;
+  final String? errorCode;
+  final int? statusCode;
+
+  const DetectionApiException(
+    this.message, {
+    this.errorCode,
+    this.statusCode,
+  });
+
+  @override
+  String toString() => message;
+}
+
+/// Detection API Service
 class DetectionService {
   static final DetectionService _instance = DetectionService._internal();
   factory DetectionService() => _instance;
@@ -24,6 +41,7 @@ class DetectionService {
     required String cropType,
     String? userToken,
   }) async {
+    final tr = AppStrings().tr;
     final fileName = imageFile.path.split(Platform.pathSeparator).last;
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(imageFile.path, filename: fileName),
@@ -47,43 +65,61 @@ class DetectionService {
           localImagePath: imageFile.path,
         );
       } else {
-        throw Exception('Server returned status ${response.statusCode}');
+        throw DetectionApiException(
+          'Server returned status ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
       }
     } on DioException catch (e) {
-      // If backend is not yet running or during UI Phase 3 before model integration:
-      // Return a clearly labeled placeholder result indicating model integration phase
-      return _generatePlaceholderResult(
-        imagePath: imageFile.path,
-        cropType: cropType,
-        errorNote: e.message ?? 'Backend offline',
+      if (e.response != null) {
+        final statusCode = e.response!.statusCode;
+        final data = e.response!.data;
+
+        // 1. Missing Model: HTTP 503 with MODEL_NOT_TRAINED
+        if (statusCode == 503) {
+          throw DetectionApiException(
+            tr('modelNotTrainedError'),
+            errorCode: 'MODEL_NOT_TRAINED',
+            statusCode: 503,
+          );
+        }
+
+        // 2. Client Validation errors: HTTP 400, 413, 415
+        if (statusCode == 400 || statusCode == 413 || statusCode == 415) {
+          String msg = tr('invalidImageError');
+          if (data is Map && data.containsKey('detail')) {
+            final detail = data['detail'];
+            if (detail is String) {
+              msg = detail;
+            } else if (detail is Map && detail.containsKey('message')) {
+              msg = detail['message'].toString();
+            }
+          }
+          throw DetectionApiException(
+            msg,
+            errorCode: 'INVALID_IMAGE',
+            statusCode: statusCode,
+          );
+        }
+
+        // 3. Other server status codes
+        throw DetectionApiException(
+          'Server error ($statusCode). Please try again.',
+          statusCode: statusCode,
+        );
+      }
+
+      // 4. Connection failure (timeout, connection refused, offline)
+      throw DetectionApiException(
+        tr('serverConnectionError'),
+        errorCode: 'CONNECTION_FAILED',
       );
     } catch (e) {
-      return _generatePlaceholderResult(
-        imagePath: imageFile.path,
-        cropType: cropType,
-        errorNote: e.toString(),
+      if (e is DetectionApiException) rethrow;
+      throw DetectionApiException(
+        tr('serverConnectionError'),
+        errorCode: 'UNEXPECTED_ERROR',
       );
     }
-  }
-
-  /// Transparently labeled placeholder result for UI testing before Phase 6 model integration
-  DetectionResult _generatePlaceholderResult({
-    required String imagePath,
-    required String cropType,
-    required String errorNote,
-  }) {
-    return DetectionResult(
-      id: 'placeholder_${DateTime.now().millisecondsSinceEpoch}',
-      imagePath: imagePath,
-      cropType: cropType,
-      status: 'pending',
-      totalDetections: 0,
-      processingTimeSec: 0.12,
-      modelVersion: '${AppConfig.modelVersion} (Awaiting Phase 6 Model Integration)',
-      primaryPest: null,
-      highestConfidence: 0.0,
-      detections: [],
-      createdAt: DateTime.now(),
-    );
   }
 }

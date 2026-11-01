@@ -20,6 +20,9 @@ class TestHealthEndpoints(unittest.TestCase):
         res = asyncio.run(root_health())
         self.assertEqual(res["status"], "healthy")
         self.assertIn("supabase", res)
+        self.assertIn("model", res)
+        self.assertFalse(res["model"]["loaded"])
+        self.assertEqual(res["model"]["status"], "not_trained")
         self.assertEqual(res["supabase"]["status"], "healthy")
         self.assertEqual(res["version"], "1.0.0")
 

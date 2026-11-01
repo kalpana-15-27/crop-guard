@@ -39,7 +39,6 @@ class TestDetectionPipeline(unittest.TestCase):
         image = storage_service.preprocess_image(self.valid_bytes)
         self.assertEqual(image.mode, "RGB")
 
-        # Mock detection box
         detections = [
             {
                 "pest_name": "Aphids",
@@ -54,12 +53,49 @@ class TestDetectionPipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(file_path))
         self.assertTrue(file_id.endswith(".jpg"))
 
-    def test_detector_latency_and_format(self):
+    def test_detector_raises_error_when_model_not_trained(self):
+        """Verifies that without trained weights, the detector strictly refuses to fabricate fake results."""
+        detector.model = None
+        self.assertFalse(detector.is_model_loaded())
         image = Image.new("RGB", (300, 300), color=(100, 200, 100))
-        dets, latency, version = detector.detect(image, crop_type="Cotton")
-        self.assertIsInstance(dets, list)
-        self.assertGreaterEqual(latency, 0.0)
-        self.assertIn("yolo11s", version)
+        with self.assertRaises(RuntimeError) as ctx:
+            detector.detect(image, crop_type="Cotton")
+        self.assertIn("not available", str(ctx.exception))
+
+    def test_detector_inference_with_loaded_weights(self):
+        """Verifies that when a valid YOLO model is loaded, inference outputs real bounding box structures."""
+        class MockTensor:
+            def __init__(self, val):
+                self._val = val
+            def item(self):
+                return self._val
+
+        class MockBox:
+            cls = [MockTensor(0)]
+            conf = [MockTensor(0.89)]
+            xyxyn = [[0.15, 0.25, 0.45, 0.55]]
+
+        class MockYOLOResult:
+            boxes = [MockBox()]
+            names = {0: "Aphids"}
+
+        class MockYOLOModel:
+            names = {0: "Aphids"}
+            def predict(self, **kwargs):
+                return [MockYOLOResult()]
+
+        detector.model = MockYOLOModel()
+        try:
+            self.assertTrue(detector.is_model_loaded())
+            image = Image.new("RGB", (300, 300), color=(100, 200, 100))
+            dets, latency, version = detector.detect(image, crop_type="Cotton")
+            self.assertEqual(len(dets), 1)
+            self.assertEqual(dets[0]["pest_name"], "Aphids")
+            self.assertEqual(dets[0]["confidence"], 0.89)
+            self.assertEqual(dets[0]["x_min"], 0.15)
+            self.assertGreaterEqual(latency, 0.0)
+        finally:
+            detector.model = None
 
 
 if __name__ == "__main__":

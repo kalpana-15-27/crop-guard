@@ -101,6 +101,9 @@ class AppStrings with ChangeNotifier {
       'analyzing': 'Analyzing image with YOLO11s AI...',
       'detecting': 'Processing pest features...',
       'uploading': 'Uploading image securely...',
+      'serverConnectionError': 'Unable to connect to the detection server.',
+      'modelNotTrainedError': 'AI model is not trained yet.',
+      'invalidImageError': 'Invalid or corrupt image file.',
 
       // Results Screen
       'resultTitle': 'Detection Results',
@@ -216,6 +219,9 @@ class AppStrings with ChangeNotifier {
       'analyzing': 'AI ద్వారా ఫోటోను విశ్లేషిస్తున్నాము...',
       'detecting': 'పురుగు లక్షణాలను పరిశీలిస్తున్నాము...',
       'uploading': 'చిత్రాన్ని అప్‌లోడ్ చేస్తున్నాము...',
+      'serverConnectionError': 'డిటెక్షన్ సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యం కాలేదు.',
+      'modelNotTrainedError': 'AI మోడల్ ఇంకా శిక్షణ పొందలేదు.',
+      'invalidImageError': 'చెల్లని లేదా పాడైన చిత్రం.',
 
       // Results Screen
       'resultTitle': 'గుర్తింపు ఫలితాలు',

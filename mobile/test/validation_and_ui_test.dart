@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:crop_guard/models/pest_model.dart';
+import 'package:crop_guard/services/detection_service.dart';
 
 void main() {
   group('Mobile UI Form Validation & Logic Tests', () {
@@ -82,6 +83,17 @@ void main() {
       expect(validatePasswords('newPassword123', 'newPassword123'), isTrue);
       expect(validatePasswords('newPassword123', 'differentPassword'), isFalse);
       expect(validatePasswords('12345', '12345'), isFalse);
+    });
+
+    test('DetectionApiException formats error messages accurately', () {
+      const connErr = DetectionApiException('Unable to connect to the detection server.', errorCode: 'CONNECTION_FAILED');
+      expect(connErr.toString(), equals('Unable to connect to the detection server.'));
+      expect(connErr.errorCode, equals('CONNECTION_FAILED'));
+
+      const modelErr = DetectionApiException('AI model is not trained yet.', errorCode: 'MODEL_NOT_TRAINED', statusCode: 503);
+      expect(modelErr.toString(), equals('AI model is not trained yet.'));
+      expect(modelErr.statusCode, equals(503));
+      expect(modelErr.errorCode, equals('MODEL_NOT_TRAINED'));
     });
   });
 }

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.core.config import settings
 from app.database.supabase_client import supabase_client
+from app.inference.detector import detector
 
 router = APIRouter()
 
@@ -20,6 +21,12 @@ async def health_check():
         "app_name": settings.PROJECT_NAME,
         "environment": settings.ENVIRONMENT,
         "version": "1.0.0",
+        "model": {
+            "version": detector.model_version,
+            "weights_path": detector.model_path,
+            "loaded": detector.is_model_loaded(),
+            "status": "ready" if detector.is_model_loaded() else "not_trained"
+        },
         "supabase": {
             "url": settings.SUPABASE_URL,
             "status": supabase_status

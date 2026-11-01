@@ -77,21 +77,45 @@ class TestMLPipeline(unittest.TestCase):
         self.assertFalse(verify_image_file(bad_img_path))
 
     def test_multi_crop_inference(self):
-        target_crops = ["Paddy/Rice", "Cotton", "Tomato", "Chilli"]
-        test_img = Image.new("RGB", (400, 400), color=(30, 100, 40))
+        class MockTensor:
+            def __init__(self, val):
+                self._val = val
+            def item(self):
+                return self._val
 
-        for crop in target_crops:
-            detections, latency, version = detector.detect(test_img, crop_type=crop)
-            self.assertIsInstance(detections, list)
-            self.assertGreater(len(detections), 0)
-            self.assertGreaterEqual(latency, 0.0)
-            self.assertTrue(detections[0]["confidence"] >= 0.5)
-            # Verify coordinates are valid normalized floats
-            for det in detections:
-                self.assertGreaterEqual(det["x_min"], 0.0)
-                self.assertLessEqual(det["x_max"], 1.0)
-                self.assertGreaterEqual(det["y_min"], 0.0)
-                self.assertLessEqual(det["y_max"], 1.0)
+        class MockBox:
+            cls = [MockTensor(0)]
+            conf = [MockTensor(0.85)]
+            xyxyn = [[0.1, 0.1, 0.4, 0.4]]
+
+        class MockResult:
+            boxes = [MockBox()]
+            names = {0: "Aphids"}
+
+        class MockModel:
+            names = {0: "Aphids"}
+            def predict(self, **kwargs):
+                return [MockResult()]
+
+        detector.model = MockModel()
+        try:
+            target_crops = ["Paddy/Rice", "Cotton", "Tomato", "Chilli"]
+            test_img = Image.new("RGB", (400, 400), color=(30, 100, 40))
+
+            for crop in target_crops:
+                detections, latency, version = detector.detect(test_img, crop_type=crop)
+                self.assertIsInstance(detections, list)
+                self.assertGreater(len(detections), 0)
+                self.assertGreaterEqual(latency, 0.0)
+                self.assertTrue(detections[0]["confidence"] >= 0.5)
+                # Verify coordinates are valid normalized floats
+                for det in detections:
+                    self.assertGreaterEqual(det["x_min"], 0.0)
+                    self.assertLessEqual(det["x_max"], 1.0)
+                    self.assertGreaterEqual(det["y_min"], 0.0)
+                    self.assertLessEqual(det["y_max"], 1.0)
+        finally:
+            detector.model = None
 
 
 if __name__ == "__main__":

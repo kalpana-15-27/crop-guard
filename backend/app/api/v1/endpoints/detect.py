@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, Header, HTTPException, status
 from app.schemas.detection import DetectionResponse, DetectionBoxSchema
@@ -20,12 +21,13 @@ async def detect_pest(
 ):
     """Core Pest Detection Endpoint:
     1. Validates file format, MIME type, and size limit (<= 10MB).
-    2. Preprocesses image and handles orientation.
-    3. Executes YOLO object detection.
-    4. Computes bounding boxes, confidence values, and class identifications.
-    5. Generates annotated image with detection bounding boxes.
-    6. Attaches bilingual agricultural advisory and preventive guidance.
-    7. Saves scan record under authenticated user ID if provided.
+    2. Verifies whether the trained YOLO model is loaded; returns HTTP 503 if not trained.
+    3. Preprocesses image and normalizes orientation.
+    4. Executes genuine YOLO object detection.
+    5. Computes bounding boxes, confidence values, and class identifications.
+    6. Generates annotated image with detection bounding boxes if pests found.
+    7. Attaches bilingual agricultural advisory and preventive guidance.
+    8. Saves scan record under authenticated user ID if provided.
     """
     # Read file bytes
     try:
@@ -36,24 +38,39 @@ async def detect_pest(
             detail=f"Could not read uploaded file: {str(e)}"
         )
 
-    # 1. Validation
+    # 1. Validation (size, extension, MIME, corrupt bytes)
     storage_service.validate_image_file(file, file_bytes)
 
-    # 2. Preprocess image
+    # 2. Model Availability Check
+    if not detector.is_model_loaded():
+        logger.warning("Pest detection requested but YOLO weights are not loaded.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error_code": "MODEL_NOT_TRAINED",
+                "message": "The pest detection model has not been trained or configured yet."
+            }
+        )
+
+    # 3. Preprocess image
     image = storage_service.preprocess_image(file_bytes)
     original_id, original_path = storage_service.save_local_image(image, prefix="orig")
 
-    # 3. Model Inference
+    # 4. Genuine Model Inference
     raw_detections, latency, model_version = detector.detect(image, crop_type=crop_type)
 
     total_detections = len(raw_detections)
     detection_status = "detected" if total_detections > 0 else "no_pest_detected"
     highest_confidence = max([d["confidence"] for d in raw_detections], default=0.0)
 
-    # 4. Generate annotated visualization
-    annotated_id, annotated_path = storage_service.create_annotated_image(image, raw_detections)
+    # 5. Generate annotated visualization if detections found
+    if total_detections > 0:
+        annotated_id, annotated_path = storage_service.create_annotated_image(image, raw_detections)
+        annotated_url = f"/uploads/annotated/{annotated_id}"
+    else:
+        annotated_url = None
 
-    # 5. Fetch Pest Advisory for primary detected pest
+    # 6. Fetch Pest Advisory for primary detected pest
     primary_pest = None
     if total_detections > 0:
         primary_pest_name = raw_detections[0]["pest_name"]
@@ -61,10 +78,10 @@ async def detect_pest(
     else:
         primary_pest_name = None
 
-    # 6. User Authentication check
+    # 7. User Authentication check
     user_id = auth_service.get_current_user_id(authorization)
 
-    # 7. Save Scan Record to History
+    # 8. Save Scan Record to History
     prediction_id = history_service.save_prediction(
         user_id=user_id,
         crop_type=crop_type,
@@ -75,7 +92,7 @@ async def detect_pest(
         model_version=model_version,
         detections=raw_detections,
         image_url=f"/uploads/{original_id}",
-        annotated_image_url=f"/uploads/annotated/{annotated_id}",
+        annotated_image_url=annotated_url,
         primary_pest_name=primary_pest_name,
     )
 
@@ -99,8 +116,8 @@ async def detect_pest(
         highest_confidence=highest_confidence,
         processing_time_sec=latency,
         model_version=model_version,
-        image_url=f"/uploads/{original_id}",
-        annotated_image_url=f"/uploads/annotated/{annotated_id}",
-        pest_category=primary_pest,
+        annotated_image_url=annotated_url,
+        created_at=datetime.now(timezone.utc),
         detections=box_schemas,
+        pest_category=primary_pest,
     )
