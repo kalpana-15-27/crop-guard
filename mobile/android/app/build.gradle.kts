@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.cropguard.ai.crop_guard"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
