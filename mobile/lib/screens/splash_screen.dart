@@ -40,6 +40,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     Future.delayed(const Duration(milliseconds: 2200), () {
       if (!mounted) return;
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (authProvider.isRecoveryActive) {
+        // Recovery deep link is active; ResetPasswordScreen is handling the navigation
+        return;
+      }
       if (authProvider.isAuthenticated) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),

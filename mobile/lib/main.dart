@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +9,10 @@ import 'core/theme.dart';
 import 'localization/app_strings.dart';
 import 'providers/auth_provider.dart';
 import 'providers/detection_provider.dart';
+import 'screens/reset_password_screen.dart';
 import 'screens/splash_screen.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,8 +49,63 @@ void main() async {
   );
 }
 
-class CropGuardApp extends StatelessWidget {
+class CropGuardApp extends StatefulWidget {
   const CropGuardApp({super.key});
+
+  @override
+  State<CropGuardApp> createState() => _CropGuardAppState();
+}
+
+class _CropGuardAppState extends State<CropGuardApp> {
+  StreamSubscription<AuthState>? _authSubscription;
+  bool _hasHandledRecovery = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToAuthEvents();
+  }
+
+  void _listenToAuthEvents() {
+    try {
+      _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+        final AuthChangeEvent event = data.event;
+
+        if (event == AuthChangeEvent.passwordRecovery) {
+          // Prevent processing the same recovery callback multiple times
+          if (!_hasHandledRecovery) {
+            _hasHandledRecovery = true;
+            debugPrint('[CropGuard] Supabase AuthChangeEvent.passwordRecovery received');
+
+            // Flag provider so SplashScreen or background listeners do not conflict
+            if (mounted) {
+              Provider.of<AuthProvider>(context, listen: false).setRecoveryActive(true);
+            }
+
+            // Navigate immediately to dedicated Reset Password Screen
+            appNavigatorKey.currentState?.pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+              (route) => false,
+            );
+          }
+        } else if (event == AuthChangeEvent.signedOut || event == AuthChangeEvent.signedIn) {
+          // Reset flag so subsequent recovery flows can be handled
+          _hasHandledRecovery = false;
+          if (mounted) {
+            Provider.of<AuthProvider>(context, listen: false).setRecoveryActive(false);
+          }
+        }
+      });
+    } catch (e) {
+      debugPrint('[CropGuard] Auth listener initialization notice: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +113,7 @@ class CropGuardApp extends StatelessWidget {
     context.watch<AppStrings>();
 
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

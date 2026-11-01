@@ -41,9 +41,19 @@ class SupabaseAuthService {
     return response;
   }
 
-  /// Send Password Reset Email
+  /// Send Password Reset Email with Android Deep Link callback
   Future<void> resetPassword(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    await _client.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: 'com.cropguard.ai://reset-password',
+    );
+  }
+
+  /// Update User Password after Recovery
+  Future<UserResponse> updatePassword(String newPassword) async {
+    return await _client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 
   /// Sign Out

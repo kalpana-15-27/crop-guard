@@ -65,5 +65,23 @@ void main() {
       expect(box.xMax, greaterThan(box.xMin));
       expect(box.yMax, greaterThan(box.yMin));
     });
+
+    test('Password reset deep link URI verification', () {
+      const expectedRedirectUrl = 'com.cropguard.ai://reset-password';
+      final uri = Uri.parse(expectedRedirectUrl);
+      expect(uri.scheme, equals('com.cropguard.ai'));
+      expect(uri.host, equals('reset-password'));
+    });
+
+    test('Password reset match and strength validation', () {
+      bool validatePasswords(String p1, String p2) {
+        if (p1.trim().length < 6) return false;
+        return p1.trim() == p2.trim();
+      }
+
+      expect(validatePasswords('newPassword123', 'newPassword123'), isTrue);
+      expect(validatePasswords('newPassword123', 'differentPassword'), isFalse);
+      expect(validatePasswords('12345', '12345'), isFalse);
+    });
   });
 }

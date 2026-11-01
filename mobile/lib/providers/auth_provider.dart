@@ -10,12 +10,19 @@ class AuthProvider with ChangeNotifier {
   Map<String, dynamic>? _profile;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isRecoveryActive = false;
 
   User? get user => _user;
   Map<String, dynamic>? get profile => _profile;
   bool get isAuthenticated => _user != null;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get isRecoveryActive => _isRecoveryActive;
+
+  void setRecoveryActive(bool val) {
+    _isRecoveryActive = val;
+    notifyListeners();
+  }
 
   String get displayName =>
       _profile?['full_name'] ??
@@ -119,10 +126,34 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updatePassword(String newPassword) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authService.updatePassword(newPassword.trim());
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await _authService.signOut();
     _user = null;
     _profile = null;
+    _isRecoveryActive = false;
     notifyListeners();
   }
 

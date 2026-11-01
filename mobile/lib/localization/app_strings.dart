@@ -60,6 +60,13 @@ class AppStrings with ChangeNotifier {
       'passwordsDoNotMatch': 'Passwords do not match',
       'invalidEmail': 'Please enter a valid email address',
       'passwordTooShort': 'Password must be at least 6 characters',
+      'resetPasswordTitle': 'Reset Password',
+      'resetPasswordSubtitle': 'Enter and confirm your new password below',
+      'newPassword': 'New Password',
+      'newPasswordHint': 'Enter your new password',
+      'saveNewPassword': 'Save New Password',
+      'passwordResetSuccess': 'Password updated successfully! Please sign in with your new password.',
+      'invalidRecoveryLink': 'Password recovery link has expired or is invalid.',
 
       // Dashboard
       'greetingMorning': 'Good Morning',
@@ -168,6 +175,13 @@ class AppStrings with ChangeNotifier {
       'passwordsDoNotMatch': 'పాస్‌వర్డ్‌లు సరిపోలడం లేదు',
       'invalidEmail': 'సరైన ఈమెయిల్ నమోదు చేయండి',
       'passwordTooShort': 'పాస్‌వర్డ్ కనీసం 6 అక్షరాలు ఉండాలి',
+      'resetPasswordTitle': 'పాస్‌వర్డ్ రీసెట్ చేయండి',
+      'resetPasswordSubtitle': 'మీ కొత్త పాస్‌వర్డ్‌ను క్రింద నమోదు చేసి నిర్ధారించండి',
+      'newPassword': 'కొత్త పాస్‌వర్డ్',
+      'newPasswordHint': 'మీ కొత్త పాస్‌వర్డ్ రాయండి',
+      'saveNewPassword': 'కొత్త పాస్‌వర్డ్‌ను సేవ్ చేయండి',
+      'passwordResetSuccess': 'పాస్‌వర్డ్ విజయవంతంగా నవీకరించబడింది! దయచేసి కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయండి.',
+      'invalidRecoveryLink': 'పాస్‌వర్డ్ రికవరీ లింక్ గడువు ముగిసింది లేదా చెల్లదు.',
 
       // Dashboard
       'greetingMorning': 'శుభోదయం',
