@@ -5,6 +5,7 @@ from app.schemas.pest import PestCategoryResponse
 
 
 class DetectionBoxSchema(BaseModel):
+    class_id: Optional[int] = Field(None, description="Canonical pest class ID (0..5)")
     pest_name: str = Field(..., description="Detected insect class label")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence score")
     x_min: float = Field(..., description="Normalized top-left bounding box X")

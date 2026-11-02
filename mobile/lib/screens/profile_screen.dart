@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import '../localization/app_strings.dart';
 import '../providers/auth_provider.dart';
 import '../services/supabase_auth_service.dart';
+import '../services/detection_service.dart';
 import '../widgets/custom_button.dart';
 import 'login_screen.dart';
 
@@ -42,6 +43,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Text(tr('save')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editServerDialog(BuildContext context) {
+    final controller = TextEditingController(text: AppConfig.backendBaseUrl);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Backend API Server'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Set FastAPI backend address for AI pest detection inference:',
+              style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g. http://192.168.1.13:8000',
+                labelText: 'Server URL',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                ActionChip(
+                  label: const Text('Emulator (10.0.2.2)'),
+                  onPressed: () => controller.text = 'http://10.0.2.2:8000',
+                ),
+                ActionChip(
+                  label: const Text('Host Wi-Fi (192.168.1.13)'),
+                  onPressed: () => controller.text = 'http://192.168.1.13:8000',
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newUrl = controller.text.trim();
+              if (newUrl.isNotEmpty) {
+                DetectionService().updateBaseUrl(newUrl);
+                setState(() {});
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -274,6 +336,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Backend API Server Tile
+              const Text(
+                'AI Inference Server',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.darkText),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () => _editServerDialog(context),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.borderLight, width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.leafGreen.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.dns_outlined, color: AppTheme.leafGreen, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'FastAPI YOLO Backend',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.darkText),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              AppConfig.backendBaseUrl,
+                              style: const TextStyle(fontSize: 12, color: AppTheme.mutedText, fontFamily: 'monospace'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.edit_outlined, size: 18, color: AppTheme.mutedText),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 32),

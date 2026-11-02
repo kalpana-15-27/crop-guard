@@ -98,6 +98,7 @@ async def detect_pest(
 
     box_schemas = [
         DetectionBoxSchema(
+            class_id=d.get("class_id"),
             pest_name=d["pest_name"],
             confidence=d["confidence"],
             x_min=d["x_min"],

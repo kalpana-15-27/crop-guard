@@ -55,12 +55,16 @@ class TestDetectionPipeline(unittest.TestCase):
 
     def test_detector_raises_error_when_model_not_trained(self):
         """Verifies that without trained weights, the detector strictly refuses to fabricate fake results."""
+        original_model = detector.model
         detector.model = None
-        self.assertFalse(detector.is_model_loaded())
-        image = Image.new("RGB", (300, 300), color=(100, 200, 100))
-        with self.assertRaises(RuntimeError) as ctx:
-            detector.detect(image, crop_type="Cotton")
-        self.assertIn("not available", str(ctx.exception))
+        try:
+            self.assertFalse(detector.is_model_loaded())
+            image = Image.new("RGB", (300, 300), color=(100, 200, 100))
+            with self.assertRaises(RuntimeError) as ctx:
+                detector.detect(image, crop_type="Cotton")
+            self.assertIn("not available", str(ctx.exception))
+        finally:
+            detector.model = original_model
 
     def test_detector_inference_with_loaded_weights(self):
         """Verifies that when a valid YOLO model is loaded, inference outputs real bounding box structures."""
@@ -84,6 +88,7 @@ class TestDetectionPipeline(unittest.TestCase):
             def predict(self, **kwargs):
                 return [MockYOLOResult()]
 
+        original_model = detector.model
         detector.model = MockYOLOModel()
         try:
             self.assertTrue(detector.is_model_loaded())
@@ -95,7 +100,7 @@ class TestDetectionPipeline(unittest.TestCase):
             self.assertEqual(dets[0]["x_min"], 0.15)
             self.assertGreaterEqual(latency, 0.0)
         finally:
-            detector.model = None
+            detector.model = original_model
 
 
 if __name__ == "__main__":

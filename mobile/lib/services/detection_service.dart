@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
 import '../localization/app_strings.dart';
 import '../models/pest_model.dart';
@@ -31,9 +32,30 @@ class DetectionService {
       baseUrl: AppConfig.backendBaseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json'},
+      headers: {
+        'Accept': 'application/json',
+        'bypass-tunnel-reminder': 'true',
+      },
     ),
   );
+
+  /// Synchronizes and normalizes the active backend base URL
+  void _syncBaseUrl() {
+    String cleanUrl = AppConfig.backendBaseUrl.trim();
+    while (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1);
+    }
+    if (_dio.options.baseUrl != cleanUrl) {
+      _dio.options.baseUrl = cleanUrl;
+    }
+  }
+
+  /// Updates backend base URL dynamically (e.g. switching from emulator to physical device LAN IP)
+  void updateBaseUrl(String newUrl) {
+    AppConfig.backendBaseUrl = newUrl.trim();
+    _syncBaseUrl();
+    debugPrint('[DetectionService] Backend URL updated to: ${_dio.options.baseUrl}');
+  }
 
   /// Send captured image to backend YOLO endpoint
   Future<DetectionResult> detectPest({
@@ -42,7 +64,19 @@ class DetectionService {
     String? userToken,
   }) async {
     final tr = AppStrings().tr;
+    _syncBaseUrl();
+
+    if (!imageFile.existsSync()) {
+      throw const DetectionApiException(
+        'Selected image file does not exist on device storage.',
+        errorCode: 'FILE_NOT_FOUND',
+      );
+    }
+
     final fileName = imageFile.path.split(Platform.pathSeparator).last;
+    final targetEndpoint = '${_dio.options.baseUrl}/api/v1/detect';
+    debugPrint('[DetectionService] Sending detection request to: $targetEndpoint (crop: $cropType, file: $fileName, size: ${imageFile.lengthSync()} bytes)');
+
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(imageFile.path, filename: fileName),
       'crop_type': cropType,
@@ -59,6 +93,8 @@ class DetectionService {
         options: options,
       );
 
+      debugPrint('[DetectionService] Response status: ${response.statusCode}');
+
       if (response.statusCode == 200 && response.data != null) {
         return DetectionResult.fromJson(
           response.data as Map<String, dynamic>,
@@ -71,6 +107,7 @@ class DetectionService {
         );
       }
     } on DioException catch (e) {
+      debugPrint('[DetectionService] DioException: type=${e.type}, message=${e.message}, error=${e.error}');
       if (e.response != null) {
         final statusCode = e.response!.statusCode;
         final data = e.response!.data;
@@ -109,15 +146,29 @@ class DetectionService {
         );
       }
 
-      // 4. Connection failure (timeout, connection refused, offline)
+      // 4. Connection failure: Timeout, Connection Refused, or Network Unreachable
+      String detailedMessage = tr('serverConnectionError');
+      String errCode = 'CONNECTION_FAILED';
+
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        detailedMessage = 'Connection timed out reaching ${_dio.options.baseUrl}. Check server status and Wi-Fi connection.';
+        errCode = 'TIMEOUT';
+      } else if (e.type == DioExceptionType.connectionError) {
+        detailedMessage = 'Cannot connect to server at ${_dio.options.baseUrl}. Ensure backend is running and reachable from phone.';
+        errCode = 'CONNECTION_FAILED';
+      }
+
       throw DetectionApiException(
-        tr('serverConnectionError'),
-        errorCode: 'CONNECTION_FAILED',
+        detailedMessage,
+        errorCode: errCode,
       );
     } catch (e) {
       if (e is DetectionApiException) rethrow;
+      debugPrint('[DetectionService] Unexpected exception: $e');
       throw DetectionApiException(
-        tr('serverConnectionError'),
+        'Unexpected detection error: $e',
         errorCode: 'UNEXPECTED_ERROR',
       );
     }

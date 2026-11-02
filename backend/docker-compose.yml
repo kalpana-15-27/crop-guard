@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  cropguard-backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: cropguard-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - MODEL_PATH=/app/ml/weights/best.pt
+      - ENVIRONMENT=production
+    restart: unless-stopped

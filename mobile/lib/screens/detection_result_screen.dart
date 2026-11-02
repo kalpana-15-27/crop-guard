@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
+import '../core/date_formatter.dart';
 import '../localization/app_strings.dart';
 import '../models/pest_model.dart';
 import '../widgets/custom_button.dart';
@@ -181,6 +182,21 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                                   ),
                                 ),
                               ],
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  const Icon(Icons.schedule, size: 13, color: AppTheme.mutedText),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${result.cropType} • ${AppDateFormatter.formatDateTime(result.createdAt)}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.mutedText,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),

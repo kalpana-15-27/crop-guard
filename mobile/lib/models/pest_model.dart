@@ -1,4 +1,5 @@
 // Data models for CropGuard AI Pests, Detections, and Scan Records
+import '../core/date_formatter.dart';
 
 class PestCategory {
   final String id;
@@ -147,9 +148,7 @@ class DetectionResult {
               ?.map((e) => DetectionBox.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : DateTime.now(),
+      createdAt: AppDateFormatter.parseUtcToLocal(json['created_at']),
     );
   }
 }

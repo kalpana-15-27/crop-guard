@@ -6,6 +6,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from app.main import root, root_health
+from app.inference.detector import detector
 
 
 class TestHealthEndpoints(unittest.TestCase):
@@ -21,10 +22,23 @@ class TestHealthEndpoints(unittest.TestCase):
         self.assertEqual(res["status"], "healthy")
         self.assertIn("supabase", res)
         self.assertIn("model", res)
-        self.assertFalse(res["model"]["loaded"])
-        self.assertEqual(res["model"]["status"], "not_trained")
+        self.assertEqual(res["model"]["loaded"], detector.is_model_loaded())
+        expected_status = "ready" if detector.is_model_loaded() else "not_trained"
+        self.assertEqual(res["model"]["status"], expected_status)
         self.assertEqual(res["supabase"]["status"], "healthy")
         self.assertEqual(res["version"], "1.0.0")
+
+    @patch("app.database.supabase_client.supabase_client.check_health")
+    def test_health_endpoint_when_model_unloaded(self, mock_health):
+        mock_health.return_value = {"status": "healthy", "code": 200}
+        orig = detector.model
+        detector.model = None
+        try:
+            res = asyncio.run(root_health())
+            self.assertFalse(res["model"]["loaded"])
+            self.assertEqual(res["model"]["status"], "not_trained")
+        finally:
+            detector.model = orig
 
 
 if __name__ == "__main__":

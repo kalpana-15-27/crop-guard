@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_config.dart';
 import '../core/theme.dart';
+import '../core/date_formatter.dart';
 import '../localization/app_strings.dart';
 import '../providers/auth_provider.dart';
 import '../providers/detection_provider.dart';
@@ -422,7 +423,7 @@ class HomeDashboardScreen extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                         ),
                         subtitle: Text(
-                          '${item.cropType} • ${item.createdAt.hour}:${item.createdAt.minute.toString().padLeft(2, '0')}',
+                          '${item.cropType} • ${AppDateFormatter.formatDateTime(item.createdAt)}',
                           style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText),

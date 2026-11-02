@@ -97,6 +97,7 @@ class TestMLPipeline(unittest.TestCase):
             def predict(self, **kwargs):
                 return [MockResult()]
 
+        original_model = detector.model
         detector.model = MockModel()
         try:
             target_crops = ["Paddy/Rice", "Cotton", "Tomato", "Chilli"]
@@ -115,7 +116,7 @@ class TestMLPipeline(unittest.TestCase):
                     self.assertGreaterEqual(det["y_min"], 0.0)
                     self.assertLessEqual(det["y_max"], 1.0)
         finally:
-            detector.model = None
+            detector.model = original_model
 
 
 if __name__ == "__main__":

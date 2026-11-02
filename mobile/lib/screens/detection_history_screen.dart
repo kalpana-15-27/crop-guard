@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../core/date_formatter.dart';
 import '../localization/app_strings.dart';
 import '../providers/detection_provider.dart';
 import '../widgets/empty_state.dart';
@@ -135,7 +136,7 @@ class DetectionHistoryScreen extends StatelessWidget {
                           children: [
                             const SizedBox(height: 4),
                             Text(
-                              '${item.cropType} • ${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year} ${item.createdAt.hour}:${item.createdAt.minute.toString().padLeft(2, '0')}',
+                              '${item.cropType} • ${AppDateFormatter.formatDateTime(item.createdAt)}',
                               style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
                             ),
                             if (hasPest) ...[
