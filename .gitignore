@@ -29,6 +29,7 @@ backend/uploads/*
 !backend/uploads/.gitkeep
 
 # Flutter & Dart
+*.apk
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
