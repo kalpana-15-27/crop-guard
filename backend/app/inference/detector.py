@@ -68,18 +68,6 @@ NAME_TO_CANONICAL_MAPPING: Dict[str, Dict[str, Any]] = {
 }
 
 
-# Host-Crop Biological Compatibility Definitions
-# Pests are strictly checked against agricultural host plant reality:
-# - Aphids, Whitefly, Thrips, Helicoverpa armigera -> Cotton, Chilli, Tomato
-# - Brown Planthopper, Yellow Stem Borer -> Paddy/Rice
-CROP_VALID_PESTS: Dict[str, Set[str]] = {
-    "Paddy/Rice": {"Brown Planthopper", "Yellow Stem Borer"},
-    "Cotton": {"Aphids", "Whitefly", "Thrips", "Helicoverpa armigera"},
-    "Tomato": {"Helicoverpa armigera", "Whitefly", "Aphids", "Thrips"},
-    "Chilli": {"Thrips", "Aphids", "Whitefly", "Helicoverpa armigera"},
-}
-
-
 class YOLOPestDetector:
     """YOLO Object Detection Pipeline for Agricultural Pest Identification."""
 
@@ -198,19 +186,6 @@ class YOLOPestDetector:
                             f"Detected YOLO class {cls_id} has no valid canonical pest mapping. Skipping detection."
                         )
                         continue
-
-                    # Biological Host-Crop Resolution:
-                    # Enforces agricultural reality so impossible cross-species classifications
-                    # (such as cotton Aphids on Paddy/Rice) are correctly attributed to the host crop pest.
-                    if crop_type and crop_type in CROP_VALID_PESTS:
-                        valid_pests = CROP_VALID_PESTS[crop_type]
-                        if mapping["pest_name"] not in valid_pests:
-                            if crop_type == "Paddy/Rice":
-                                # Small sap-sucking insect clusters on rice are Brown Planthopper
-                                mapping = YOLO_TO_CANONICAL_MAPPING[2]
-                            elif mapping["pest_name"] == "Brown Planthopper":
-                                # BPH is rice-specific; on dicot crops, sap-sucking nymphs are Aphids
-                                mapping = YOLO_TO_CANONICAL_MAPPING[0]
 
                     # Normalized xyxy coordinates [0.0, 1.0]
                     xyxyn_item = box.xyxyn[0]
