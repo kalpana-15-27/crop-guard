@@ -85,18 +85,24 @@ SEED_PEST_KNOWLEDGE: List[Dict] = [
 
 class PestService:
     """Service to query agricultural pest identification and preventive advisory."""
+    _cached_pests: Optional[List[PestCategoryResponse]] = None
 
-    @staticmethod
-    def get_all_pests() -> List[PestCategoryResponse]:
-        """Fetch all pest categories from Supabase, with automatic fallback to seed data."""
+    @classmethod
+    def get_all_pests(cls) -> List[PestCategoryResponse]:
+        """Fetch all pest categories, cached in-memory to prevent inference latency."""
+        if cls._cached_pests is not None:
+            return cls._cached_pests
+
         try:
             records = supabase_client.get("pest_categories")
             if records and len(records) > 0:
-                return [PestCategoryResponse(**r) for r in records]
+                cls._cached_pests = [PestCategoryResponse(**r) for r in records]
+                return cls._cached_pests
         except Exception as e:
             logger.debug(f"Querying Supabase pest_categories failed ({e}), using verified local seed data.")
 
-        return [PestCategoryResponse(**p) for p in SEED_PEST_KNOWLEDGE]
+        cls._cached_pests = [PestCategoryResponse(**p) for p in SEED_PEST_KNOWLEDGE]
+        return cls._cached_pests
 
     @staticmethod
     def get_pest_by_id(pest_id: str) -> Optional[PestCategoryResponse]:

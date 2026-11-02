@@ -12,7 +12,7 @@ class AppConfig {
 
   // Backend API URL
   // Default to emulator localhost (10.0.2.2). On a physical Android device, change to host LAN IP (e.g., http://192.168.1.X:8000)
-  static const String defaultBackendUrl = 'http://10.40.92.239:8000';
+  static const String defaultBackendUrl = 'https://crop-guard-api.onrender.com';
   static String backendBaseUrl = defaultBackendUrl;
 
   // Supported Crops

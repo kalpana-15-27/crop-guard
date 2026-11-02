@@ -39,9 +39,9 @@ class DetectionProvider with ChangeNotifier {
     try {
       final XFile? file = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 90,
-        maxWidth: 1920,
-        maxHeight: 1920,
+        imageQuality: 85,
+        maxWidth: 1280,
+        maxHeight: 1280,
       );
       if (file != null) {
         _selectedImage = File(file.path);
@@ -62,9 +62,9 @@ class DetectionProvider with ChangeNotifier {
     try {
       final XFile? file = await _picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 90,
-        maxWidth: 1920,
-        maxHeight: 1920,
+        imageQuality: 85,
+        maxWidth: 1280,
+        maxHeight: 1280,
       );
       if (file != null) {
         _selectedImage = File(file.path);

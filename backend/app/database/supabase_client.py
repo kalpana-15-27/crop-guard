@@ -30,7 +30,7 @@ class SupabaseClient:
     def get(self, table: str, params: Optional[Dict[str, Any]] = None, user_token: Optional[str] = None) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/rest/v1/{table}"
         headers = self._get_headers(user_token)
-        response = requests.get(url, headers=headers, params=params, timeout=15)
+        response = requests.get(url, headers=headers, params=params, timeout=3)
         response.raise_for_status()
         return response.json()
 

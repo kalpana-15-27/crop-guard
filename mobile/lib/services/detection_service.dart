@@ -30,8 +30,9 @@ class DetectionService {
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.backendBaseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 90),
+      receiveTimeout: const Duration(seconds: 120),
+      sendTimeout: const Duration(seconds: 60),
       headers: {
         'Accept': 'application/json',
         'bypass-tunnel-reminder': 'true',
@@ -153,10 +154,10 @@ class DetectionService {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.sendTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
-        detailedMessage = 'Connection timed out reaching ${_dio.options.baseUrl}. Check server status and Wi-Fi connection.';
+        detailedMessage = 'Cloud server was waking up from sleep or network timed out. Please tap "Analyze" once more to retry.';
         errCode = 'TIMEOUT';
       } else if (e.type == DioExceptionType.connectionError) {
-        detailedMessage = 'Cannot connect to server at ${_dio.options.baseUrl}. Ensure backend is running and reachable from phone.';
+        detailedMessage = 'Cannot connect to server at ${_dio.options.baseUrl}. Please check internet connection.';
         errCode = 'CONNECTION_FAILED';
       }
 

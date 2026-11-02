@@ -75,7 +75,7 @@ class YOLOPestDetector:
         self.model_path = model_path or settings.MODEL_PATH
         self.confidence_threshold = settings.CONFIDENCE_THRESHOLD
         self.iou_threshold = settings.IOU_THRESHOLD
-        self.imgsz = getattr(settings, "YOLO_IMGSZ", 640)
+        self.imgsz = getattr(settings, "YOLO_IMGSZ", 384)
         self.model = None
         self.model_version = "yolo11s-v1.0"
         self.device = "cpu"
@@ -92,6 +92,10 @@ class YOLOPestDetector:
         if os.path.exists(self.model_path):
             try:
                 import torch
+                if not torch.cuda.is_available():
+                    # Free tier cloud containers (Render) allocate 0.1 vCPU.
+                    # Single-threading prevents excessive thread switching overhead.
+                    torch.set_num_threads(1)
                 self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
             except Exception:
                 self.device = "cpu"
