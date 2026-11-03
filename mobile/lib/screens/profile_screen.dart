@@ -78,6 +78,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               runSpacing: 4,
               children: [
                 ActionChip(
+                  label: const Text('Live Cloud (Render)'),
+                  onPressed: () => controller.text = 'https://crop-guard-api.onrender.com',
+                ),
+                ActionChip(
                   label: const Text('Emulator (10.0.2.2)'),
                   onPressed: () => controller.text = 'http://10.0.2.2:8000',
                 ),

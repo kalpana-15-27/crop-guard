@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../config/app_config.dart';
 import '../core/theme.dart';
 import '../core/date_formatter.dart';
 import '../localization/app_strings.dart';
@@ -78,10 +80,20 @@ class _DetectionResultScreenState extends State<DetectionResultScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (result.imagePath != null && File(result.imagePath!).existsSync())
+                      if (!kIsWeb && result.imagePath != null && File(result.imagePath!).existsSync())
                         Image.file(
                           File(result.imagePath!),
                           fit: BoxFit.cover,
+                        )
+                      else if (result.annotatedImagePath != null)
+                        Image.network(
+                          result.annotatedImagePath!.startsWith('http')
+                              ? result.annotatedImagePath!
+                              : '${AppConfig.backendBaseUrl}${result.annotatedImagePath}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.image_not_supported, color: Colors.white54, size: 48),
+                          ),
                         )
                       else
                         const Center(

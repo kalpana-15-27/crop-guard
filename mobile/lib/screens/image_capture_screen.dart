@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_config.dart';
@@ -76,10 +77,10 @@ class ImageCaptureScreen extends StatelessWidget {
                   color: AppTheme.cardWhite,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: detection.selectedImage != null
+                    color: (detection.selectedImageBytes != null || detection.selectedImage != null)
                         ? AppTheme.leafGreen
                         : AppTheme.borderLight,
-                    width: detection.selectedImage != null ? 2 : 1.2,
+                    width: (detection.selectedImageBytes != null || detection.selectedImage != null) ? 2 : 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -91,14 +92,20 @@ class ImageCaptureScreen extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
-                  child: detection.selectedImage != null
+                  child: (detection.selectedImageBytes != null || detection.selectedImage != null)
                       ? Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.file(
-                              detection.selectedImage!,
-                              fit: BoxFit.cover,
-                            ),
+                            if (detection.selectedImageBytes != null)
+                              Image.memory(
+                                detection.selectedImageBytes!,
+                                fit: BoxFit.cover,
+                              )
+                            else if (!kIsWeb && detection.selectedImage != null)
+                              Image.file(
+                                detection.selectedImage!,
+                                fit: BoxFit.cover,
+                              ),
                             // Semi-transparent controls on preview
                             Positioned(
                               bottom: 12,
@@ -196,7 +203,7 @@ class ImageCaptureScreen extends StatelessWidget {
                 text: tr('analyzeButton'),
                 isLoading: detection.isAnalyzing,
                 icon: Icons.search,
-                onPressed: detection.selectedImage == null || detection.isAnalyzing
+                onPressed: (detection.selectedImageBytes == null && detection.selectedImage == null) || detection.isAnalyzing
                     ? null
                     : () async {
                         final ok = await detection.analyzeSelectedImage();

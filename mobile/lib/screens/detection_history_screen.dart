@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
@@ -114,7 +115,7 @@ class DetectionHistoryScreen extends StatelessWidget {
                             width: 56,
                             height: 56,
                             color: AppTheme.surfaceMuted,
-                            child: item.imagePath != null && File(item.imagePath!).existsSync()
+                            child: (!kIsWeb && item.imagePath != null && File(item.imagePath!).existsSync())
                                 ? Image.file(
                                     File(item.imagePath!),
                                     fit: BoxFit.cover,

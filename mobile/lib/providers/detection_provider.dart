@@ -10,6 +10,8 @@ class DetectionProvider with ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
 
   File? _selectedImage;
+  Uint8List? _selectedImageBytes;
+  XFile? _selectedXFile;
   String _selectedCrop = 'Paddy/Rice';
   bool _isAnalyzing = false;
   DetectionResult? _currentResult;
@@ -19,6 +21,8 @@ class DetectionProvider with ChangeNotifier {
   final List<DetectionResult> _historyList = [];
 
   File? get selectedImage => _selectedImage;
+  Uint8List? get selectedImageBytes => _selectedImageBytes;
+  XFile? get selectedXFile => _selectedXFile;
   String get selectedCrop => _selectedCrop;
   bool get isAnalyzing => _isAnalyzing;
   DetectionResult? get currentResult => _currentResult;
@@ -44,7 +48,12 @@ class DetectionProvider with ChangeNotifier {
         maxHeight: 1280,
       );
       if (file != null) {
-        _selectedImage = File(file.path);
+        final bytes = await file.readAsBytes();
+        _selectedXFile = file;
+        _selectedImageBytes = bytes;
+        if (!kIsWeb) {
+          _selectedImage = File(file.path);
+        }
         _currentResult = null;
         _errorMessage = null;
         notifyListeners();
@@ -67,7 +76,12 @@ class DetectionProvider with ChangeNotifier {
         maxHeight: 1280,
       );
       if (file != null) {
-        _selectedImage = File(file.path);
+        final bytes = await file.readAsBytes();
+        _selectedXFile = file;
+        _selectedImageBytes = bytes;
+        if (!kIsWeb) {
+          _selectedImage = File(file.path);
+        }
         _currentResult = null;
         _errorMessage = null;
         notifyListeners();
@@ -82,6 +96,8 @@ class DetectionProvider with ChangeNotifier {
 
   void clearSelectedImage() {
     _selectedImage = null;
+    _selectedImageBytes = null;
+    _selectedXFile = null;
     _currentResult = null;
     _errorMessage = null;
     notifyListeners();
@@ -89,7 +105,7 @@ class DetectionProvider with ChangeNotifier {
 
   /// Run Detection on selected image
   Future<bool> analyzeSelectedImage({String? userToken}) async {
-    if (_selectedImage == null) {
+    if (_selectedImageBytes == null && _selectedImage == null) {
       _errorMessage = 'Please select or capture an image first';
       notifyListeners();
       return false;
@@ -101,7 +117,9 @@ class DetectionProvider with ChangeNotifier {
 
     try {
       final result = await _detectionService.detectPest(
-        imageFile: _selectedImage!,
+        imageFile: _selectedImage,
+        imageBytes: _selectedImageBytes,
+        fileName: _selectedXFile?.name ?? 'pest_photo.jpg',
         cropType: _selectedCrop,
         userToken: userToken,
       );

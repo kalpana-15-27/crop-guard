@@ -58,28 +58,43 @@ class DetectionService {
     debugPrint('[DetectionService] Backend URL updated to: ${_dio.options.baseUrl}');
   }
 
-  /// Send captured image to backend YOLO endpoint
+  /// Send captured image to backend YOLO endpoint (universal for Web and Mobile)
   Future<DetectionResult> detectPest({
-    required File imageFile,
+    File? imageFile,
+    Uint8List? imageBytes,
+    String? fileName,
     required String cropType,
     String? userToken,
   }) async {
     final tr = AppStrings().tr;
     _syncBaseUrl();
 
-    if (!imageFile.existsSync()) {
+    MultipartFile multipartFile;
+    final uploadFileName = fileName ?? 'crop_pest.jpg';
+
+    if (imageBytes != null) {
+      multipartFile = MultipartFile.fromBytes(imageBytes, filename: uploadFileName);
+    } else if (imageFile != null && !kIsWeb) {
+      if (!imageFile.existsSync()) {
+        throw const DetectionApiException(
+          'Selected image file does not exist on device storage.',
+          errorCode: 'FILE_NOT_FOUND',
+        );
+      }
+      final name = imageFile.path.split(Platform.pathSeparator).last;
+      multipartFile = await MultipartFile.fromFile(imageFile.path, filename: name);
+    } else {
       throw const DetectionApiException(
-        'Selected image file does not exist on device storage.',
-        errorCode: 'FILE_NOT_FOUND',
+        'No valid image data provided for analysis.',
+        errorCode: 'NO_IMAGE',
       );
     }
 
-    final fileName = imageFile.path.split(Platform.pathSeparator).last;
     final targetEndpoint = '${_dio.options.baseUrl}/api/v1/detect';
-    debugPrint('[DetectionService] Sending detection request to: $targetEndpoint (crop: $cropType, file: $fileName, size: ${imageFile.lengthSync()} bytes)');
+    debugPrint('[DetectionService] Sending detection request to: $targetEndpoint (crop: $cropType, file: $uploadFileName)');
 
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(imageFile.path, filename: fileName),
+      'file': multipartFile,
       'crop_type': cropType,
     });
 
@@ -99,7 +114,7 @@ class DetectionService {
       if (response.statusCode == 200 && response.data != null) {
         return DetectionResult.fromJson(
           response.data as Map<String, dynamic>,
-          localImagePath: imageFile.path,
+          localImagePath: !kIsWeb && imageFile != null ? imageFile.path : null,
         );
       } else {
         throw DetectionApiException(
