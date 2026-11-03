@@ -35,16 +35,6 @@ app.add_middleware(
 if os.path.exists(LOCAL_UPLOAD_DIR):
     app.mount("/uploads", StaticFiles(directory=LOCAL_UPLOAD_DIR), name="uploads")
 
-# Root endpoint
-@app.get("/", tags=["Root"])
-async def root():
-    return {
-        "message": "Welcome to CropGuard AI Backend API",
-        "docs": "/docs",
-        "health": "/health",
-        "api_v1": settings.API_V1_STR
-    }
-
 # Top-level /health endpoint
 @app.get("/health", tags=["Health"])
 async def root_health():
@@ -53,6 +43,21 @@ async def root_health():
 
 # Include versioned API routes
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Mount Flutter Web Application (PWA for iOS/Safari/Android/Desktop)
+_web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static_web")
+if os.path.exists(_web_dir):
+    app.mount("/", StaticFiles(directory=_web_dir, html=True), name="flutter_web")
+else:
+    # Fallback root endpoint if static_web is not compiled
+    @app.get("/", tags=["Root"])
+    async def root():
+        return {
+            "message": "Welcome to CropGuard AI Backend API",
+            "docs": "/docs",
+            "health": "/health",
+            "api_v1": settings.API_V1_STR
+        }
 
 if __name__ == "__main__":
     import uvicorn
