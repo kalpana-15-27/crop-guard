@@ -99,13 +99,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               final newUrl = controller.text.trim();
               if (newUrl.isNotEmpty) {
+                await AppConfig.saveBackendUrl(newUrl);
                 DetectionService().updateBaseUrl(newUrl);
                 setState(() {});
               }
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('Save'),
           ),

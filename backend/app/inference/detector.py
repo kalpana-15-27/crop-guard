@@ -75,7 +75,7 @@ class YOLOPestDetector:
         self.model_path = model_path or settings.MODEL_PATH
         self.confidence_threshold = settings.CONFIDENCE_THRESHOLD
         self.iou_threshold = settings.IOU_THRESHOLD
-        self.imgsz = getattr(settings, "YOLO_IMGSZ", 640)
+        self.imgsz = getattr(settings, "YOLO_IMGSZ", 480)
         self.model = None
         self.model_version = "yolo11s-v1.0"
         self.device = "cpu"

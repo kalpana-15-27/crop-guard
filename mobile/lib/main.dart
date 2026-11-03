@@ -11,11 +11,16 @@ import 'providers/auth_provider.dart';
 import 'providers/detection_provider.dart';
 import 'screens/reset_password_screen.dart';
 import 'screens/splash_screen.dart';
+import 'services/detection_service.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load permanently saved backend URL from phone storage (defaults to Render cloud)
+  await AppConfig.loadSavedBackendUrl();
+  DetectionService().updateBaseUrl(AppConfig.backendBaseUrl);
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(

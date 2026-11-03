@@ -74,7 +74,7 @@ class Settings:
     MODEL_PATH: str = _resolve_model_path(os.getenv("MODEL_PATH", "ml/weights/best.pt"))
     CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.25"))
     IOU_THRESHOLD: float = float(os.getenv("IOU_THRESHOLD", "0.45"))
-    YOLO_IMGSZ: int = int(os.getenv("YOLO_IMGSZ", "640"))
+    YOLO_IMGSZ: int = int(os.getenv("YOLO_IMGSZ", "480"))
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]

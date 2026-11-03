@@ -151,4 +151,19 @@ class DetectionResult {
       createdAt: AppDateFormatter.parseUtcToLocal(json['created_at']),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'image_path': imagePath,
+        'annotated_image_path': annotatedImagePath,
+        'crop_type': cropType,
+        'detection_status': status,
+        'total_detections': totalDetections,
+        'processing_time_sec': processingTimeSec,
+        'model_version': modelVersion,
+        'pest_category': primaryPest?.toJson(),
+        'highest_confidence': highestConfidence,
+        'detections': detections.map((e) => e.toJson()).toList(),
+        'created_at': createdAt.toUtc().toIso8601String(),
+      };
 }

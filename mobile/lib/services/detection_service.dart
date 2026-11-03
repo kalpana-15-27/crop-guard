@@ -30,8 +30,8 @@ class DetectionService {
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.backendBaseUrl,
-      connectTimeout: const Duration(seconds: 90),
-      receiveTimeout: const Duration(seconds: 120),
+      connectTimeout: const Duration(seconds: 120),
+      receiveTimeout: const Duration(seconds: 180),
       sendTimeout: const Duration(seconds: 60),
       headers: {
         'Accept': 'application/json',

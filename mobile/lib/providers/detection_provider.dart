@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/pest_model.dart';
 import '../services/detection_service.dart';
 
@@ -8,6 +10,8 @@ import '../services/detection_service.dart';
 class DetectionProvider with ChangeNotifier {
   final DetectionService _detectionService = DetectionService();
   final ImagePicker _picker = ImagePicker();
+
+  static const String _historyKey = 'cropguard_scan_history_records';
 
   File? _selectedImage;
   Uint8List? _selectedImageBytes;
@@ -17,8 +21,41 @@ class DetectionProvider with ChangeNotifier {
   DetectionResult? _currentResult;
   String? _errorMessage;
 
-  // Scan History in-memory cache
+  // Scan History in-memory & persistent cache
   final List<DetectionResult> _historyList = [];
+
+  DetectionProvider() {
+    _loadHistoryFromDisk();
+  }
+
+  Future<void> _loadHistoryFromDisk() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_historyKey);
+      if (raw != null && raw.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(raw);
+        _historyList.clear();
+        for (final item in decoded) {
+          if (item is Map<String, dynamic>) {
+            _historyList.add(DetectionResult.fromJson(item));
+          }
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[DetectionProvider] Error loading persisted history: $e');
+    }
+  }
+
+  Future<void> _saveHistoryToDisk() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = _historyList.map((e) => e.toJson()).toList();
+      await prefs.setString(_historyKey, jsonEncode(list));
+    } catch (e) {
+      debugPrint('[DetectionProvider] Error persisting history: $e');
+    }
+  }
 
   File? get selectedImage => _selectedImage;
   Uint8List? get selectedImageBytes => _selectedImageBytes;
@@ -126,6 +163,7 @@ class DetectionProvider with ChangeNotifier {
 
       _currentResult = result;
       _historyList.insert(0, result);
+      _saveHistoryToDisk();
       _isAnalyzing = false;
       notifyListeners();
       return true;
@@ -144,11 +182,13 @@ class DetectionProvider with ChangeNotifier {
 
   void removeHistoryItem(String id) {
     _historyList.removeWhere((item) => item.id == id);
+    _saveHistoryToDisk();
     notifyListeners();
   }
 
   void clearHistory() {
     _historyList.clear();
+    _saveHistoryToDisk();
     notifyListeners();
   }
 }
