@@ -65,6 +65,7 @@ class DetectionService {
     String? fileName,
     required String cropType,
     String? userToken,
+    String? userId,
   }) async {
     final tr = AppStrings().tr;
     _syncBaseUrl();
@@ -81,7 +82,7 @@ class DetectionService {
           errorCode: 'FILE_NOT_FOUND',
         );
       }
-      final name = imageFile.path.split(Platform.pathSeparator).last;
+      final name = imageFile.path.split(RegExp(r'[/\\]')).last;
       multipartFile = await MultipartFile.fromFile(imageFile.path, filename: name);
     } else {
       throw const DetectionApiException(
@@ -98,9 +99,15 @@ class DetectionService {
       'crop_type': cropType,
     });
 
-    final options = Options(
-      headers: userToken != null ? {'Authorization': 'Bearer $userToken'} : null,
-    );
+    final headers = <String, String>{};
+    if (userToken != null && userToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $userToken';
+    }
+    if (userId != null && userId.isNotEmpty) {
+      headers['X-User-Id'] = userId;
+    }
+
+    final options = headers.isNotEmpty ? Options(headers: headers) : null;
 
     try {
       final response = await _dio.post(
@@ -187,6 +194,63 @@ class DetectionService {
         'Unexpected detection error: $e',
         errorCode: 'UNEXPECTED_ERROR',
       );
+    }
+  }
+
+  /// Fetch remote scan history from backend (supports cross-device sync)
+  Future<List<DetectionResult>> getHistory({
+    String? userToken,
+    String? userId,
+  }) async {
+    _syncBaseUrl();
+    final headers = <String, String>{};
+    if (userToken != null && userToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $userToken';
+    }
+    if (userId != null && userId.isNotEmpty) {
+      headers['X-User-Id'] = userId;
+    }
+
+    try {
+      final response = await _dio.get(
+        '/api/v1/history',
+        options: headers.isNotEmpty ? Options(headers: headers) : null,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final items = (data['items'] as List<dynamic>?) ?? [];
+        return items
+            .map((e) => DetectionResult.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('[DetectionService] Failed to fetch remote history: $e');
+      return [];
+    }
+  }
+
+  /// Delete scan record on remote backend
+  Future<bool> deleteHistoryItem(String predictionId, {String? userToken, String? userId}) async {
+    _syncBaseUrl();
+    final headers = <String, String>{};
+    if (userToken != null && userToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $userToken';
+    }
+    if (userId != null && userId.isNotEmpty) {
+      headers['X-User-Id'] = userId;
+    }
+
+    try {
+      final response = await _dio.delete(
+        '/api/v1/history/$predictionId',
+        options: headers.isNotEmpty ? Options(headers: headers) : null,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('[DetectionService] Failed to delete remote history item: $e');
+      return false;
     }
   }
 }

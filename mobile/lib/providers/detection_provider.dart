@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/pest_model.dart';
 import '../services/detection_service.dart';
 
@@ -18,6 +19,7 @@ class DetectionProvider with ChangeNotifier {
   XFile? _selectedXFile;
   String _selectedCrop = 'Paddy/Rice';
   bool _isAnalyzing = false;
+  bool _isSyncingHistory = false;
   DetectionResult? _currentResult;
   String? _errorMessage;
 
@@ -25,7 +27,9 @@ class DetectionProvider with ChangeNotifier {
   final List<DetectionResult> _historyList = [];
 
   DetectionProvider() {
-    _loadHistoryFromDisk();
+    _loadHistoryFromDisk().then((_) {
+      syncRemoteHistory();
+    });
   }
 
   Future<void> _loadHistoryFromDisk() async {
@@ -57,11 +61,51 @@ class DetectionProvider with ChangeNotifier {
     }
   }
 
+  /// Sync scan history with cloud backend (enables instant cross-device history)
+  Future<void> syncRemoteHistory() async {
+    if (_isSyncingHistory) return;
+    _isSyncingHistory = true;
+
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = Supabase.instance.client.auth.currentUser;
+      final activeToken = session?.accessToken;
+      final activeUserId = user?.id;
+
+      final remoteItems = await _detectionService.getHistory(
+        userToken: activeToken,
+        userId: activeUserId,
+      );
+
+      if (remoteItems.isNotEmpty) {
+        final existingIds = _historyList.map((e) => e.id).toSet();
+        bool hasNew = false;
+        for (final item in remoteItems) {
+          if (!existingIds.contains(item.id)) {
+            _historyList.add(item);
+            existingIds.add(item.id);
+            hasNew = true;
+          }
+        }
+        if (hasNew) {
+          _historyList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          await _saveHistoryToDisk();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('[DetectionProvider] Remote history sync notice: $e');
+    } finally {
+      _isSyncingHistory = false;
+    }
+  }
+
   File? get selectedImage => _selectedImage;
   Uint8List? get selectedImageBytes => _selectedImageBytes;
   XFile? get selectedXFile => _selectedXFile;
   String get selectedCrop => _selectedCrop;
   bool get isAnalyzing => _isAnalyzing;
+  bool get isSyncingHistory => _isSyncingHistory;
   DetectionResult? get currentResult => _currentResult;
   String? get errorMessage => _errorMessage;
   List<DetectionResult> get historyList => List.unmodifiable(_historyList);
@@ -140,8 +184,8 @@ class DetectionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Run Detection on selected image
-  Future<bool> analyzeSelectedImage({String? userToken}) async {
+  /// Run Detection on selected image with automatic Supabase user token & ID binding
+  Future<bool> analyzeSelectedImage({String? userToken, String? userId}) async {
     if (_selectedImageBytes == null && _selectedImage == null) {
       _errorMessage = 'Please select or capture an image first';
       notifyListeners();
@@ -153,17 +197,23 @@ class DetectionProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = Supabase.instance.client.auth.currentUser;
+      final activeToken = userToken ?? session?.accessToken;
+      final activeUserId = userId ?? user?.id;
+
       final result = await _detectionService.detectPest(
         imageFile: _selectedImage,
         imageBytes: _selectedImageBytes,
         fileName: _selectedXFile?.name ?? 'pest_photo.jpg',
         cropType: _selectedCrop,
-        userToken: userToken,
+        userToken: activeToken,
+        userId: activeUserId,
       );
 
       _currentResult = result;
       _historyList.insert(0, result);
-      _saveHistoryToDisk();
+      await _saveHistoryToDisk();
       _isAnalyzing = false;
       notifyListeners();
       return true;
@@ -184,6 +234,17 @@ class DetectionProvider with ChangeNotifier {
     _historyList.removeWhere((item) => item.id == id);
     _saveHistoryToDisk();
     notifyListeners();
+
+    // Trigger backend deletion in background
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = Supabase.instance.client.auth.currentUser;
+      _detectionService.deleteHistoryItem(
+        id,
+        userToken: session?.accessToken,
+        userId: user?.id,
+      );
+    } catch (_) {}
   }
 
   void clearHistory() {

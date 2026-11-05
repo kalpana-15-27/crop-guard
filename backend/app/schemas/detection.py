@@ -37,9 +37,12 @@ class DetectionHistoryItem(BaseModel):
     total_detections: int
     highest_confidence: float
     processing_time_sec: Optional[float] = 0.0
+    model_version: Optional[str] = "yolo11s-v1.0"
     image_url: Optional[str] = None
     annotated_image_url: Optional[str] = None
     pest_name: Optional[str] = None
+    pest_category: Optional[PestCategoryResponse] = None
+    detections: List[DetectionBoxSchema] = Field(default_factory=list)
     created_at: datetime
 
 

@@ -9,17 +9,24 @@ router = APIRouter()
 
 
 @router.get("", response_model=DetectionHistoryList, summary="List scan history records")
-async def get_history(authorization: Optional[str] = Header(None)):
+async def get_history(
+    authorization: Optional[str] = Header(None),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+):
     """Retrieve scan history for the current user. Returns public/session scans if unauthenticated."""
-    user_id = auth_service.get_current_user_id(authorization)
+    user_id = auth_service.get_current_user_id(authorization=authorization, x_user_id=x_user_id)
     items = history_service.get_user_history(user_id)
     return DetectionHistoryList(total=len(items), items=items)
 
 
 @router.get("/{prediction_id}", response_model=DetectionResponse, summary="Get details of a past prediction scan")
-async def get_prediction_detail(prediction_id: str, authorization: Optional[str] = Header(None)):
+async def get_prediction_detail(
+    prediction_id: str,
+    authorization: Optional[str] = Header(None),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+):
     """Fetch complete prediction details, including bounding boxes and pest guidance."""
-    user_id = auth_service.get_current_user_id(authorization)
+    user_id = auth_service.get_current_user_id(authorization=authorization, x_user_id=x_user_id)
     record = history_service.get_prediction_by_id(prediction_id, user_id)
     if not record:
         raise HTTPException(
@@ -60,9 +67,13 @@ async def get_prediction_detail(prediction_id: str, authorization: Optional[str]
 
 
 @router.delete("/{prediction_id}", summary="Delete a scan record")
-async def delete_prediction(prediction_id: str, authorization: Optional[str] = Header(None)):
+async def delete_prediction(
+    prediction_id: str,
+    authorization: Optional[str] = Header(None),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+):
     """Delete a scan record from the history."""
-    user_id = auth_service.get_current_user_id(authorization)
+    user_id = auth_service.get_current_user_id(authorization=authorization, x_user_id=x_user_id)
     deleted = history_service.delete_prediction(prediction_id, user_id)
     if not deleted:
         raise HTTPException(

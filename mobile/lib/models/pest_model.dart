@@ -142,7 +142,20 @@ class DetectionResult {
       modelVersion: json['model_version'] as String? ?? 'yolo11s-v1.0',
       primaryPest: json['pest_category'] != null
           ? PestCategory.fromJson(json['pest_category'] as Map<String, dynamic>)
-          : null,
+          : (json['pest_name'] != null
+              ? PestCategory(
+                  id: 'cat_${json['pest_name']}',
+                  pestName: json['pest_name'] as String,
+                  scientificName: '',
+                  affectedCrops: [json['crop_type'] as String? ?? 'Crop'],
+                  description: 'AI detection record',
+                  descriptionTe: 'AI గుర్తింపు రికార్డ్',
+                  symptoms: 'Detected in crop leaf image',
+                  symptomsTe: 'పంట ఆకు చిత్రంలో గుర్తించబడింది',
+                  preventiveGuidance: 'Consult agricultural officer or inspect crop field regularly.',
+                  preventiveGuidanceTe: 'వ్యవసాయ అధికారిని సంప్రదించండి లేదా పంట పొలాన్ని క్రమం తప్పకుండా పరిశీలించండి.',
+                )
+              : null),
       highestConfidence: (json['highest_confidence'] as num?)?.toDouble() ?? 0.0,
       detections: (json['detections'] as List<dynamic>?)
               ?.map((e) => DetectionBox.fromJson(e as Map<String, dynamic>))

@@ -4,6 +4,7 @@ import '../config/app_config.dart';
 import '../core/theme.dart';
 import '../localization/app_strings.dart';
 import '../providers/auth_provider.dart';
+import '../providers/detection_provider.dart';
 import '../services/supabase_auth_service.dart';
 import '../services/detection_service.dart';
 import '../widgets/custom_button.dart';
@@ -133,6 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.pop(ctx);
               await auth.signOut();
               if (context.mounted) {
+                Provider.of<DetectionProvider>(context, listen: false).clearHistory();
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                   (route) => false,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../localization/app_strings.dart';
 import '../providers/auth_provider.dart';
+import '../providers/detection_provider.dart';
 import 'login_screen.dart';
 import 'main_navigation_screen.dart';
 
@@ -45,6 +46,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         return;
       }
       if (authProvider.isAuthenticated) {
+        Provider.of<DetectionProvider>(context, listen: false).syncRemoteHistory();
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
         );

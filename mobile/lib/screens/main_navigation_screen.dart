@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../localization/app_strings.dart';
+import '../providers/detection_provider.dart';
 import 'home_dashboard_screen.dart';
 import 'image_capture_screen.dart';
 import 'detection_history_screen.dart';
@@ -31,6 +33,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     setState(() {
       _currentIndex = index;
     });
+    if (index == 2) {
+      // Sync cloud scan history whenever history tab is focused
+      Provider.of<DetectionProvider>(context, listen: false).syncRemoteHistory();
+    }
   }
 
   @override

@@ -18,6 +18,7 @@ async def detect_pest(
     file: UploadFile = File(..., description="Uploaded crop leaf or pest image file (JPG, PNG, WEBP)"),
     crop_type: str = Form("Paddy/Rice", description="Target crop: Paddy/Rice, Cotton, Tomato, Chilli"),
     authorization: Optional[str] = Header(None, description="Optional Supabase Auth Bearer token"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id", description="Optional Supabase User ID"),
 ):
     """Core Pest Detection Endpoint:
     1. Validates file format, MIME type, and size limit (<= 10MB).
@@ -79,7 +80,7 @@ async def detect_pest(
         primary_pest_name = None
 
     # 7. User Authentication check
-    user_id = auth_service.get_current_user_id(authorization)
+    user_id = auth_service.get_current_user_id(authorization=authorization, x_user_id=x_user_id)
 
     # 8. Save Scan Record to History
     prediction_id = history_service.save_prediction(
@@ -94,6 +95,7 @@ async def detect_pest(
         image_url=f"/uploads/{original_id}",
         annotated_image_url=annotated_url,
         primary_pest_name=primary_pest_name,
+        primary_pest=primary_pest,
     )
 
     box_schemas = [
